@@ -1,7 +1,5 @@
 package com.krashtan.eug.r0b1c.ble;
 
-
-import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
@@ -15,19 +13,11 @@ import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.krashtan.eug.r0b1c.MainActivity;
-import com.krashtan.eug.r0b1c.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,20 +31,19 @@ public class BluetoothHandler {
 
     private Context context;
     private boolean mEnabled = false;
+    private boolean mScanning = false;
+    private AddHandler mAddHandler;
     private BluetoothAdapter mBluetoothAdapter;
     private String mCurrentConnectedBLEAddr;
     private BleService mBleService;
-    private BLEDeviceListAdapter mDevListAdapter;
-    private AddHandler mAddHandler;
-    private Dialog mBleDialog;
+    private ArrayList<BleDevice> mDevList;
 
     public BluetoothHandler(Context context) {
         this.context = context;
-        mDevListAdapter = new BLEDeviceListAdapter(context);
         mBluetoothAdapter = null;
         mCurrentConnectedBLEAddr = null;
         mAddHandler = new AddHandler();
-        mBleDialog = new Dialog(context);
+        mDevList = new ArrayList<BleDevice>();
 
         if(!isSupportBle()){
             Toast.makeText(context, "your device not support BLE!", Toast.LENGTH_SHORT).show();
@@ -94,8 +83,8 @@ public class BluetoothHandler {
         return mEnabled;
     }
 
-    public BLEDeviceListAdapter getDeviceListAdapter(){
-        return mDevListAdapter;
+    public ArrayList<BleDevice> getDeviceList(){
+        return mDevList;
     }
 
     private BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
@@ -106,20 +95,15 @@ public class BluetoothHandler {
         }
     };
 
-    public class BluetoothScanInfo{
-        public BluetoothDevice device;
-        public int rssi;
-    }
-
-    private class AddHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            if(msg.obj != null){
-                mDevListAdapter.addDevice((BluetoothScanInfo) msg.obj);
-                mDevListAdapter.notifyDataSetChanged();
+    private int inList(String addr) {
+        int pos = -1;
+        for(BleDevice d:mDevList){
+            if(d.getDeviceAddr().equals(addr)){
+                pos = mDevList.indexOf(d);
+                break;
             }
         }
+        return pos;
     }
 
     public void scanLeDevice(final boolean enable) {
@@ -132,19 +116,15 @@ public class BluetoothHandler {
 
                 final BluetoothDevice bluetoothDevice = result.getDevice();
                 final int rssi = result.getRssi();
-
-                Log.i(LOG_TAG, "result "+bluetoothDevice.getName());
-                ((MainActivity)context).runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Message msg = new Message();
-                        BluetoothScanInfo info = new BluetoothScanInfo();
-                        info.device = bluetoothDevice;
-                        info.rssi = rssi;
-                        msg.obj = info;
-                        mAddHandler.sendMessage(msg);
-                    }
-                });
+                int newIndex = inList(bluetoothDevice.getAddress());
+                if ( newIndex == -1) {
+                    mDevList.add(new BleDevice(bluetoothDevice, rssi));
+                    Log.i(LOG_TAG, "Add "+bluetoothDevice.getAddress());
+                    ((MainActivity)context).updateDevList();
+                } else {
+                    mDevList.set(newIndex, new BleDevice(bluetoothDevice, rssi));
+                    Log.i(LOG_TAG, "Update "+bluetoothDevice.getAddress());
+                }
             }
 
             @Override
@@ -161,40 +141,24 @@ public class BluetoothHandler {
         final BluetoothLeScanner bluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
         Log.d(LOG_TAG, "scanLeDevice: "+enable);
         if (enable) {
-            mDevListAdapter.clearDevice();
-            mDevListAdapter.notifyDataSetChanged();
-            // Stops scanning after a pre-defined scan period.
-            mAddHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    bluetoothLeScanner.stopScan(mLeScanCallback);
-                }
-            }, SCAN_PERIOD);
-
-            SelectBleDevice();
-            bluetoothLeScanner.startScan(mLeScanCallback);
+            if (!mScanning) {
+                mDevList.clear();
+                // Stops scanning after a pre-defined scan period.
+                mAddHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        bluetoothLeScanner.stopScan(mLeScanCallback);
+                        mScanning = false;
+                    }
+                }, SCAN_PERIOD);
+                ((MainActivity) context).updateDevList();
+                bluetoothLeScanner.startScan(mLeScanCallback);
+                mScanning = true;
+            }
         } else {
             bluetoothLeScanner.stopScan(mLeScanCallback);
+            mScanning = false;
         }
-    }
-
-    private void SelectBleDevice() {
-        mBleDialog.setContentView(R.layout.ble_dialog);
-        mBleDialog.setTitle("BLE devices");
-        ListView bleDeviceListView = mBleDialog.findViewById(R.id.bleDeviceListView);
-        bleDeviceListView.setAdapter(getDeviceListAdapter());
-        bleDeviceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
-                BluetoothDevice device = getDeviceListAdapter().getItem(position).device;
-                // connect
-                connect(device.getAddress());
-                mBleDialog.dismiss();
-            }
-        });
-        mBleDialog.show();
     }
 
     public void connect(String deviceAddress){
@@ -235,4 +199,10 @@ public class BluetoothHandler {
         }
     };
 
+    private class AddHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+        }
+    }
 }
