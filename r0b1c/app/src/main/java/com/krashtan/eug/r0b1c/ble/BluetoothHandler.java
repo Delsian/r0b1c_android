@@ -120,7 +120,7 @@ public class BluetoothHandler {
                 if ( newIndex == -1) {
                     mDevList.add(new BleDevice(bluetoothDevice, rssi));
                     Log.i(LOG_TAG, "Add "+bluetoothDevice.getAddress());
-                    ((MainActivity)context).updateDevList();
+                    //((MainActivity)context).updateDevList();
                 } else {
                     mDevList.set(newIndex, new BleDevice(bluetoothDevice, rssi));
                     Log.i(LOG_TAG, "Update "+bluetoothDevice.getAddress());
@@ -151,7 +151,6 @@ public class BluetoothHandler {
                         mScanning = false;
                     }
                 }, SCAN_PERIOD);
-                ((MainActivity) context).updateDevList();
                 bluetoothLeScanner.startScan(mLeScanCallback);
                 mScanning = true;
             }

@@ -7,6 +7,14 @@
     android:layout_height="match_parent"
     tools:context="com.krashtan.eug.r0b1c.MainActivity">
 
+    <FrameLayout
+        android:id="@+id/frame_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/navigation"
+        android:animateLayoutChanges="true">
+
+    </FrameLayout>
 
     <android.support.design.widget.BottomNavigationView
         android:id="@+id/navigation"
@@ -21,20 +29,5 @@
         app:menu="@menu/navigation">
 
     </android.support.design.widget.BottomNavigationView>
-
-    <EditText
-        android:id="@+id/editText"
-        android:layout_width="wrap_content"
-        android:layout_height="92dp"
-        android:ems="10"
-        android:inputType="textMultiLine"
-        tools:layout_editor_absoluteX="84dp"
-        tools:layout_editor_absoluteY="343dp" />
-
-    <Spinner
-        android:id="@+id/ble_devices"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="visible" />
 
 </android.support.constraint.ConstraintLayout>
