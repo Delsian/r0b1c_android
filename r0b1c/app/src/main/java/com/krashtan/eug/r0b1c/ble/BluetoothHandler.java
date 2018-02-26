@@ -15,6 +15,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import com.krashtan.eug.r0b1c.MainActivity;
@@ -106,7 +107,7 @@ public class BluetoothHandler {
         return pos;
     }
 
-    public void scanLeDevice(final boolean enable) {
+    public void scanLeDevice(final boolean enable, final ArrayAdapter adapter) {
         final ScanCallback mLeScanCallback = new ScanCallback() {
 
             @Override
@@ -120,7 +121,7 @@ public class BluetoothHandler {
                 if ( newIndex == -1) {
                     mDevList.add(new BleDevice(bluetoothDevice, rssi));
                     Log.i(LOG_TAG, "Add "+bluetoothDevice.getAddress());
-                    //((MainActivity)context).updateDevList();
+                    adapter.notifyDataSetChanged();
                 } else {
                     mDevList.set(newIndex, new BleDevice(bluetoothDevice, rssi));
                     Log.i(LOG_TAG, "Update "+bluetoothDevice.getAddress());
@@ -143,6 +144,7 @@ public class BluetoothHandler {
         if (enable) {
             if (!mScanning) {
                 mDevList.clear();
+                adapter.notifyDataSetChanged();
                 // Stops scanning after a pre-defined scan period.
                 mAddHandler.postDelayed(new Runnable() {
                     @Override

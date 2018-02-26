@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.view.LayoutInflater;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
@@ -52,13 +53,20 @@ public class BleDeviceSelector extends ArrayAdapter<String> {
 
         TextView devNameTv = (TextView) view.findViewById(R.id.textViewDevName);
         TextView devAddrTv = (TextView) view.findViewById(R.id.textViewDevAddr);
-        TextView devRssiTV = (TextView) view.findViewById(R.id.textViewRssi);
+        ImageView imageView=(ImageView) view.findViewById(R.id.img_rssi);
 
         BleDevice deviceData = items.get(position);
 
         devNameTv.setText(deviceData.getDeviceName());
-        devAddrTv.setText("Addr: " + deviceData.getDeviceAddr());
-        devRssiTV.setText("RSSI: "+ String.valueOf(deviceData.getDeviceRssi()));
+        devAddrTv.setText("[" + deviceData.getDeviceAddr()+"]");
+
+        int rssi = deviceData.getDeviceRssi();
+        int rescode = 0;
+        if (rssi>-56) rescode = 4;
+        else if (rssi > -75) rescode = 3;
+        else if (rssi > -84) rescode = 2;
+        int id = mContext.getResources().getIdentifier("signal" + rescode, "drawable", mContext.getPackageName());
+        imageView.setImageResource(id);
 
         return view;
     }

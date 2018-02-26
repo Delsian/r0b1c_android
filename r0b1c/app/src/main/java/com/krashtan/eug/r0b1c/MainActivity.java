@@ -4,12 +4,10 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
-import android.widget.Toast;
 
-import com.krashtan.eug.r0b1c.ble.BleDeviceSelector;
 import com.krashtan.eug.r0b1c.ble.BluetoothHandler;
 
 public class MainActivity extends AppCompatActivity {
@@ -28,18 +26,19 @@ public class MainActivity extends AppCompatActivity {
             switch (item.getItemId()) {
                 case R.id.navigation_setup:
                     selectedFragment = mSetupFragment;
-                    return true;
+                    break;
                 case R.id.navigation_control:
                     selectedFragment = mControlFragment;
-                    return true;
+                    break;
                 case R.id.navigation_program:
                     selectedFragment = mProgramFragment;
-                    return true;
+                    break;
+                default:
+                    return false;
             }
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            fragmentManager.beginTransaction()
-                    .replace(R.id.frame_layout, selectedFragment)
-                    .commit();
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.frame_layout, selectedFragment);
+            transaction.commit();
             return true;
         }
     };
@@ -56,6 +55,11 @@ public class MainActivity extends AppCompatActivity {
         bluetoothHandler = new BluetoothHandler(this);
         BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+
+        //Manually displaying the first fragment - one time only
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.frame_layout, mSetupFragment);
+        transaction.commit();
     }
 
     public BluetoothHandler getBluetoothHandler() {
