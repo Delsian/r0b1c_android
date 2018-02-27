@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.krashtan.eug.r0b1c.ble.BleDeviceSelector;
 import com.krashtan.eug.r0b1c.ble.BluetoothHandler;
+import com.krashtan.eug.r0b1c.rdev.RportSetup;
 
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
@@ -44,12 +45,14 @@ public class SetupFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_setup, container, false);
+        RportSetup frame = new RportSetup(context);
         LinearLayout ports = view.findViewById(R.id.layoutPortSettings);
-        for (int i = 0; i < 4 ; i++) {
-            PortSettings ps = new PortSettings(context);
-            ps.SetPortParams(i);
-            ports.addView(ps);
-        }
+        ports.addView(frame);
+        //for (int i = 0; i < 4 ; i++) {
+        //    PortSettings ps = new PortSettings(context);
+        //    ps.SetPortParams(i);
+        //    ports.addView(ps);
+        //}
         return view;
     }
 
