@@ -1,0 +1,62 @@
+<xml xmlns="http://www.w3.org/1999/xhtml"><block type="factory_base" id="+q)`fH=[-##As}RZ;Fzw" deletable="false" movable="false" x="0" y="0">
+    <mutation connections="BOTH"></mutation>
+    <field name="NAME">Motor</field>
+    <field name="INLINE">INT</field>
+    <field name="CONNECTIONS">BOTH</field>
+    <statement name="INPUTS">
+      <block type="input_dummy" id="HRuqRZ;pCLPhy!+y(+.m">
+        <field name="ALIGN">LEFT</field>
+        <statement name="FIELDS">
+          <block type="field_dropdown" id="/2%]-=ou0=X[e^f]yrMy">
+            <mutation options="[&quot;text&quot;,&quot;text&quot;,&quot;text&quot;,&quot;text&quot;]"></mutation>
+            <field name="FIELDNAME">Port</field>
+            <field name="USER0">0</field>
+            <field name="CPU0">Port 1</field>
+            <field name="USER1">1</field>
+            <field name="CPU1">Port 2</field>
+            <field name="USER2">2</field>
+            <field name="CPU2">Port 3</field>
+            <field name="USER3">3</field>
+            <field name="CPU3">Port 4</field>
+          </block>
+        </statement>
+        <next>
+          <block type="input_value" id="fOY[qw;fN9Rma-f80EY[">
+            <field name="INPUTNAME">Power</field>
+            <field name="ALIGN">CENTRE</field>
+            <statement name="FIELDS">
+              <block type="field_static" id="w{pkFyajHXL*q}uOZ,P1">
+                <field name="TEXT">Power:</field>
+              </block>
+            </statement>
+            <value name="TYPE">
+              <shadow type="type_null" id=":Rybm[4zymq4u21sKa`m"></shadow>
+              <block type="type_number" id="5(b|Ey2TyHmDF::t:fA$"></block>
+            </value>
+          </block>
+        </next>
+      </block>
+    </statement>
+    <value name="TOOLTIP">
+      <block type="text" id="lW?VcsSIOnJ@R3EZ.%J9" deletable="false" movable="false">
+        <field name="TEXT">Motor tooltip</field>
+      </block>
+    </value>
+    <value name="HELPURL">
+      <block type="text" id="h!G2YJbkYEfj]smGn@kf" deletable="false" movable="false">
+        <field name="TEXT">Motor Help</field>
+      </block>
+    </value>
+    <value name="TOPTYPE">
+      <shadow type="type_null" id="RusazY/Zai,T^k=MTB5X"></shadow>
+    </value>
+    <value name="BOTTOMTYPE">
+      <shadow type="type_null" id="0!j@E:9(BSZv=,~S21[~"></shadow>
+    </value>
+    <value name="COLOUR">
+      <block type="colour_hue" id="-02!z~mD|~,g[`l/~Zc(">
+        <mutation colour="#a55b5b"></mutation>
+        <field name="HUE">0</field>
+      </block>
+    </value>
+  </block></xml>

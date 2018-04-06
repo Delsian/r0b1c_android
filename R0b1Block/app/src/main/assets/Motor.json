@@ -1,0 +1,43 @@
+[{
+  "type": "Motor",
+  "message0": "%1 %2 Power: %3",
+  "args0": [
+    {
+      "type": "field_dropdown",
+      "name": "Port",
+      "options": [
+        [
+          "0",
+          "Port 1"
+        ],
+        [
+          "1",
+          "Port 2"
+        ],
+        [
+          "2",
+          "Port 3"
+        ],
+        [
+          "3",
+          "Port 4"
+        ]
+      ]
+    },
+    {
+      "type": "input_dummy"
+    },
+    {
+      "type": "input_value",
+      "name": "Power",
+      "check": "Number",
+      "align": "CENTRE"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 0,
+  "tooltip": "Motor tooltip",
+  "helpUrl": "Motor Help"
+}]
