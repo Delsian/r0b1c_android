@@ -1,8 +1,10 @@
 package com.eug.r0b1c.r0b1block;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
@@ -19,6 +21,8 @@ public class MainActivity extends AbstractBlocklyActivity {
     private static final String TAG = "MainActivity";
     private static final String TOOLBOX = "toolbox.xml";
 
+    private BluetoothHandler bluetoothHandler;
+
     // Add custom blocks to this list.
     private static final List<String> BLOCK_DEFINITIONS = Arrays.asList(
             DefaultBlocks.LOGIC_BLOCKS_PATH,
@@ -32,13 +36,18 @@ public class MainActivity extends AbstractBlocklyActivity {
             "Motor.js"
     );
     private Handler mHandler;
-    private TextView mGeneratedTextView;
+    //private TextView mGeneratedTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         mHandler = new Handler();
+        bluetoothHandler = new BluetoothHandler(this);
+    }
+
+    public BluetoothHandler getBluetoothHandler() {
+        return bluetoothHandler;
     }
 
     @NonNull
@@ -66,7 +75,7 @@ public class MainActivity extends AbstractBlocklyActivity {
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            mGeneratedTextView.setText(generatedCode);
+                            //mGeneratedTextView.setText(generatedCode);
                         }
                     });
                 }
@@ -75,7 +84,7 @@ public class MainActivity extends AbstractBlocklyActivity {
     @Override
     protected View onCreateContentView(int parentId) {
         View root = getLayoutInflater().inflate(R.layout.activity_main, null);
-        mGeneratedTextView = (TextView) root.findViewById(R.id.generated_code);
+        //mGeneratedTextView = (TextView) root.findViewById(R.id.generated_code);
 
         return root;
     }
@@ -86,11 +95,25 @@ public class MainActivity extends AbstractBlocklyActivity {
     }
 
     @Override
+    protected int getActionBarMenuResId() {
+        return R.menu.actionbar;
+    }
+
+    @Override
     protected void onInitBlankWorkspace() {
         // Initialize available variable names.
         getController().addVariable("item");
 
         // run bluetooth server
 
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_ble) {
+            Intent intent = new Intent(this, BleSelect.class);
+            startActivity(intent);
+        }
+        return true;
     }
 }

@@ -10,14 +10,14 @@
           <block type="field_dropdown" id="/2%]-=ou0=X[e^f]yrMy">
             <mutation options="[&quot;text&quot;,&quot;text&quot;,&quot;text&quot;,&quot;text&quot;]"></mutation>
             <field name="FIELDNAME">Port</field>
-            <field name="USER0">0</field>
-            <field name="CPU0">Port 1</field>
-            <field name="USER1">1</field>
-            <field name="CPU1">Port 2</field>
-            <field name="USER2">2</field>
-            <field name="CPU2">Port 3</field>
-            <field name="USER3">3</field>
-            <field name="CPU3">Port 4</field>
+            <field name="USER0">Port 1</field>
+            <field name="CPU0">0</field>
+            <field name="USER1">Port 2</field>
+            <field name="CPU1">1</field>
+            <field name="USER2">Port 3</field>
+            <field name="CPU2">2</field>
+            <field name="USER3">Port 4</field>
+            <field name="CPU3">3</field>
           </block>
         </statement>
         <next>

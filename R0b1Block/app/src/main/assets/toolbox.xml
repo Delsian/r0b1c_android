@@ -16,7 +16,7 @@
 <toolbox>
     <category name="Motor" colour="10">
         <block type="Motor">
-            <value name="VALUE">
+            <value name="Power">
                 <shadow type="math_number">
                     <field name="Power">50</field>
                 </shadow>

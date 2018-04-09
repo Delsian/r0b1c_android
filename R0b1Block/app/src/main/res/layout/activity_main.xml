@@ -15,12 +15,4 @@
         <include layout="@layout/blockly_unified_workspace" />
     </RelativeLayout>
 
-    <TextView android:id="@+id/generated_code"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_weight="2"
-        android:text="None"
-        android:textIsSelectable="true"
-        />
-
 </android.support.constraint.ConstraintLayout>

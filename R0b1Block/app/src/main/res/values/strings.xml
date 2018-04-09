@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">R0b1Block</string>
+
+    <string name="action_save">Save</string>
+    <string name="action_load">Load</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_run">Run</string>
+    <string name="action_ble">BLE</string>
+    <string name="title_activity_ble_select">BleSelect</string>
 </resources>
