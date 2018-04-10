@@ -27,26 +27,19 @@ import java.util.UUID;
 
 public class BluetoothHandler {
     private static final String LOG_TAG = "BluetoothHandler";
-    private static final long SCAN_PERIOD = 2000;
-    private static final UUID targetServiceUuid =
-            UUID.fromString("60ae973a-d019-4dd3-884f-96e834805f11");
 
     private Context context;
     private boolean mEnabled = false;
-    private boolean mScanning = false;
-    private AddHandler mAddHandler;
     private BluetoothAdapter mBluetoothAdapter;
     private String mCurrentConnectedBLEAddr;
     private BleService mBleService;
-    private ArrayList<BleDevice> mDevList;
     private BleMenuState menuState;
+    private BleScanner mBleScanner;
 
     public BluetoothHandler(Context context) {
         this.context = context;
         mBluetoothAdapter = null;
         mCurrentConnectedBLEAddr = null;
-        mAddHandler = new AddHandler();
-        mDevList = new ArrayList<BleDevice>();
         menuState = new BleMenuState();
 
         if (!isSupportBle()) {
@@ -61,6 +54,8 @@ public class BluetoothHandler {
         } else {
             setEnabled(true);
         }
+
+        mBleScanner = new BleScanner(this);
     }
 
 
@@ -87,10 +82,6 @@ public class BluetoothHandler {
         return mEnabled;
     }
 
-    public ArrayList<BleDevice> getDeviceList(){
-        return mDevList;
-    }
-
     private BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
         @Override
         public void onLeScan(final BluetoothDevice device, final int rssi,
@@ -99,71 +90,6 @@ public class BluetoothHandler {
         }
     };
 
-    private int inList(String addr) {
-        int pos = -1;
-        for(BleDevice d:mDevList){
-            if(d.getDeviceAddr().equals(addr)){
-                pos = mDevList.indexOf(d);
-                break;
-            }
-        }
-        return pos;
-    }
-
-    public void scanLeDevice(final boolean enable, final ArrayAdapter adapter) {
-        final ScanCallback mLeScanCallback = new ScanCallback() {
-
-            @Override
-            public void onScanResult(int callbackType, ScanResult result) {
-
-                super.onScanResult(callbackType, result);
-
-                final BluetoothDevice bluetoothDevice = result.getDevice();
-                final int rssi = result.getRssi();
-                int newIndex = inList(bluetoothDevice.getAddress());
-                if ( newIndex == -1) {
-                    mDevList.add(new BleDevice(bluetoothDevice, rssi));
-                    Log.i(LOG_TAG, "Add "+bluetoothDevice.getAddress());
-                    adapter.notifyDataSetChanged();
-                } else {
-                    mDevList.set(newIndex, new BleDevice(bluetoothDevice, rssi));
-                    Log.i(LOG_TAG, "Update "+bluetoothDevice.getAddress());
-                }
-            }
-
-            @Override
-            public void onBatchScanResults(List<ScanResult> results) {
-                super.onBatchScanResults(results);
-            }
-
-            @Override
-            public void onScanFailed(int errorCode) {
-                super.onScanFailed(errorCode);
-            }
-        };
-
-        final BluetoothLeScanner bluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
-        Log.d(LOG_TAG, "scanLeDevice: "+enable);
-        if (enable) {
-            if (!mScanning) {
-                mDevList.clear();
-                adapter.notifyDataSetChanged();
-                // Stops scanning after a pre-defined scan period.
-                mAddHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        bluetoothLeScanner.stopScan(mLeScanCallback);
-                        mScanning = false;
-                    }
-                }, SCAN_PERIOD);
-                bluetoothLeScanner.startScan(mLeScanCallback);
-                mScanning = true;
-            }
-        } else {
-            bluetoothLeScanner.stopScan(mLeScanCallback);
-            mScanning = false;
-        }
-    }
 
     public void connect(String deviceAddress){
         mCurrentConnectedBLEAddr = deviceAddress;
@@ -203,18 +129,14 @@ public class BluetoothHandler {
         }
     };
 
-    private class AddHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-        }
-    }
-
     /* Change menu icon according to state */
     public void MenuTap(MenuItem icon) {
-        menuState.MenuTap();
+        if (menuState.MenuTap()) {
+            mBleScanner.scanLeDevice(true);
+        }
     }
     public void SetMenuItem(MenuItem icon) {
         menuState.SetMenuItem(icon);
     }
+    public BleMenuState GetMenyStateH () { return menuState; }
 }
