@@ -14,7 +14,11 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -35,6 +39,7 @@ public class BluetoothHandler {
     private String mCurrentConnectedBLEAddr;
     private BleService mBleService;
     private ArrayList<BleDevice> mDevList;
+    private BleMenuState menuState;
 
     public BluetoothHandler(Context context) {
         this.context = context;
@@ -42,17 +47,18 @@ public class BluetoothHandler {
         mCurrentConnectedBLEAddr = null;
         mAddHandler = new AddHandler();
         mDevList = new ArrayList<BleDevice>();
+        menuState = new BleMenuState();
 
-        if(!isSupportBle()){
+        if (!isSupportBle()) {
             Toast.makeText(context, "your device not support BLE!", Toast.LENGTH_SHORT).show();
-            ((MainActivity)context).finish();
-            return ;
+            ((MainActivity) context).finish();
+            return;
         }
         // open bluetooth
         if (!getBluetoothAdapter().isEnabled()) {
             Intent mIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            ((MainActivity)context).startActivityForResult(mIntent, 1);
-        }else{
+            ((MainActivity) context).startActivityForResult(mIntent, 1);
+        } else {
             setEnabled(true);
         }
     }
@@ -202,5 +208,13 @@ public class BluetoothHandler {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
         }
+    }
+
+    /* Change menu icon according to state */
+    public void MenuTap(MenuItem icon) {
+        menuState.MenuTap();
+    }
+    public void SetMenuItem(MenuItem icon) {
+        menuState.SetMenuItem(icon);
     }
 }

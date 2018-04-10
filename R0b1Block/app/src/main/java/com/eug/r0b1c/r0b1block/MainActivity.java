@@ -4,16 +4,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
+
 
 import com.google.blockly.android.AbstractBlocklyActivity;
 import com.google.blockly.android.codegen.CodeGenerationRequest;
-import com.google.blockly.android.codegen.LoggingCodeGeneratorCallback;
 import com.google.blockly.model.DefaultBlocks;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -84,9 +83,15 @@ public class MainActivity extends AbstractBlocklyActivity {
     @Override
     protected View onCreateContentView(int parentId) {
         View root = getLayoutInflater().inflate(R.layout.activity_main, null);
-        //mGeneratedTextView = (TextView) root.findViewById(R.id.generated_code);
 
         return root;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.actionbar, menu);
+        bluetoothHandler.SetMenuItem(menu.findItem(R.id.action_ble));
+        return true;
     }
 
     @Override
@@ -111,8 +116,7 @@ public class MainActivity extends AbstractBlocklyActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_ble) {
-            Intent intent = new Intent(this, BleSelect.class);
-            startActivity(intent);
+            bluetoothHandler.MenuTap(item);
         }
         return true;
     }
