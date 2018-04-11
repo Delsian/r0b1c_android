@@ -1,14 +1,17 @@
 package com.eug.r0b1c.r0b1block;
 
 
+import android.content.Context;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 public class BleMenuState {
     private MenuStateE state = MenuStateE.DISCONNECTED;
     private MenuItem icon;
+    private Context context;
 
-    public BleMenuState() {
-
+    public BleMenuState(Context ct) {
+        context = ct;
     }
 
     public void SetMenuItem(MenuItem item) { this.icon = item; }
@@ -27,6 +30,7 @@ public class BleMenuState {
     public boolean MenuTap() {
         switch (state) {
             case DISCONNECTED:
+                Toast.makeText(context, "Scanning...", Toast.LENGTH_SHORT);
                 icon.setIcon(R.drawable.ic_ble_scan_24dp);
                 state = MenuStateE.SCANNING; // SCAN
                 return true;
@@ -35,6 +39,7 @@ public class BleMenuState {
                 state = MenuStateE.CONN_LOCK;
                 break;
             case CONN_LOCK:
+                Toast.makeText(context, "Disconnected", Toast.LENGTH_SHORT);
                 icon.setIcon(R.drawable.ic_ble_white_24dp);
                 state = MenuStateE.DISCONNECTED;
                 break;

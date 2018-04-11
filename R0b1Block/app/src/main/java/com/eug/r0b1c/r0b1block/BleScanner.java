@@ -6,16 +6,13 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
-import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelUuid;
 import android.util.Log;
-import android.widget.ArrayAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class BleScanner {
     private static final String LOG_TAG = "BleScanner";
@@ -104,11 +101,23 @@ public class BleScanner {
         }
     }
 
+    private BleDevice getDevMaxRssi() {
+        int pos = 0;
+        int rssi = mDevList.get(0).getDeviceRssi();
+        for(BleDevice d:mDevList){
+            if(rssi > d.getDeviceRssi()){
+                pos = mDevList.indexOf(d);
+                rssi = d.getDeviceRssi();
+            }
+        }
+        return mDevList.get(pos);
+    }
+
     private void OnScanEnd() {
         scanLeDevice(false);
-        BleMenuState mState = bHandler.GetMenyStateH();
+        BleMenuState mState = bHandler.GetMenuStateH();
         if (mDevList.size() > 0) {
-            mState.SetConnected();
+            bHandler.connect(getDevMaxRssi());
         } else {
             mState.SetDisonnected();
         }

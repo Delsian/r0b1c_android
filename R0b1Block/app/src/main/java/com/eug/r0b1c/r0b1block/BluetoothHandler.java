@@ -40,7 +40,7 @@ public class BluetoothHandler {
         this.context = context;
         mBluetoothAdapter = null;
         mCurrentConnectedBLEAddr = null;
-        menuState = new BleMenuState();
+        menuState = new BleMenuState(context);
 
         if (!isSupportBle()) {
             Toast.makeText(context, "your device not support BLE!", Toast.LENGTH_SHORT).show();
@@ -57,7 +57,6 @@ public class BluetoothHandler {
 
         mBleScanner = new BleScanner(this);
     }
-
 
     public boolean isSupportBle(){
         // is support 4.0 ?
@@ -82,21 +81,20 @@ public class BluetoothHandler {
         return mEnabled;
     }
 
-    private BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
-        @Override
-        public void onLeScan(final BluetoothDevice device, final int rssi,
-                             final byte[] scanRecord) {
-
+    public boolean SendCode(final String code) {
+        if (mCurrentConnectedBLEAddr != null) {
+            return true;
         }
-    };
+        return false;
+    }
 
-
-    public void connect(String deviceAddress){
-        mCurrentConnectedBLEAddr = deviceAddress;
+    public void connect(BleDevice dev){
+        mCurrentConnectedBLEAddr = dev.getDeviceAddr();
+        Log.i(LOG_TAG, "Connecting to "+mCurrentConnectedBLEAddr);
         Intent gattServiceIntent = new Intent(context, BleService.class);
 
         if(!context.bindService(gattServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE)){
-            System.out.println("bindService failed!");
+            Log.e(LOG_TAG, "bindService failed!");
         }
 
         //context.registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
@@ -107,7 +105,7 @@ public class BluetoothHandler {
                 mCurrentConnectedBLEAddr = null;
             }
         }else{
-            System.out.println("mBleService = null");
+            Log.e(LOG_TAG, "mBleService = null");
         }
     }
 
@@ -126,6 +124,7 @@ public class BluetoothHandler {
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             mBleService = null;
+            menuState.SetDisonnected();
         }
     };
 
@@ -138,5 +137,5 @@ public class BluetoothHandler {
     public void SetMenuItem(MenuItem icon) {
         menuState.SetMenuItem(icon);
     }
-    public BleMenuState GetMenyStateH () { return menuState; }
+    public BleMenuState GetMenuStateH() { return menuState; }
 }

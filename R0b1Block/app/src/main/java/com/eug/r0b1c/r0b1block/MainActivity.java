@@ -12,6 +12,8 @@ import android.view.View;
 import com.google.blockly.android.AbstractBlocklyActivity;
 import com.google.blockly.android.codegen.CodeGenerationRequest;
 import com.google.blockly.model.DefaultBlocks;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +23,7 @@ public class MainActivity extends AbstractBlocklyActivity {
     private static final String TOOLBOX = "toolbox.xml";
 
     private BluetoothHandler bluetoothHandler;
+    private Upgrader mUpgrader;
 
     // Add custom blocks to this list.
     private static final List<String> BLOCK_DEFINITIONS = Arrays.asList(
@@ -43,6 +46,7 @@ public class MainActivity extends AbstractBlocklyActivity {
 
         mHandler = new Handler();
         bluetoothHandler = new BluetoothHandler(this);
+        mUpgrader = new Upgrader();
     }
 
     public BluetoothHandler getBluetoothHandler() {
@@ -71,12 +75,13 @@ public class MainActivity extends AbstractBlocklyActivity {
             new CodeGenerationRequest.CodeGeneratorCallback() {
                 @Override
                 public void onFinishCodeGeneration(final String generatedCode) {
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
+                    bluetoothHandler.SendCode(generatedCode);
+                    //mHandler.post(new Runnable() {
+                        //@Override
+                        //public void run() {
                             //mGeneratedTextView.setText(generatedCode);
-                        }
-                    });
+                        //}
+                    //});
                 }
             };
 
@@ -108,9 +113,6 @@ public class MainActivity extends AbstractBlocklyActivity {
     protected void onInitBlankWorkspace() {
         // Initialize available variable names.
         getController().addVariable("item");
-
-        // run bluetooth server
-
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
