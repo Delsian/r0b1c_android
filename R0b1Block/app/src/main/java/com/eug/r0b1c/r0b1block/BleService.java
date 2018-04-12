@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
@@ -13,6 +14,8 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
+
+import java.util.List;
 
 
 public class BleService extends Service {
@@ -27,6 +30,15 @@ public class BleService extends Service {
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
     private int mConnectionState = STATE_DISCONNECTED;
+
+    public final static String ACTION_GATT_CONNECTED =
+            "r0b1c.ACTION_GATT_CONNECTED";
+    public final static String ACTION_GATT_DISCONNECTED =
+            "r0b1c.ACTION_GATT_DISCONNECTED";
+    public final static String ACTION_GATT_SERVICES_DISCOVERED =
+            "r0b1c.ACTION_GATT_SERVICES_DISCOVERED";
+    public final static String ACTION_DATA_AVAILABLE =
+            "r0b1c.ACTION_DATA_AVAILABLE";
 
     /**
      * Initializes a reference to the local Bluetooth adapter.
@@ -61,6 +73,7 @@ public class BleService extends Service {
      *         callback.
      */
     public boolean connect(final String address) {
+        Log.i(LOG_TAG, "Conn "+address);
         if (mBluetoothAdapter == null || address == null) {
             Log.w(LOG_TAG, "BluetoothAdapter not initialized or unspecified address.");
             return false;
@@ -89,8 +102,21 @@ public class BleService extends Service {
         Log.d(LOG_TAG, "Trying to create a new connection.");
         mBluetoothDeviceAddress = address;
         mConnectionState = STATE_CONNECTING;
-        //System.out.println("device.getBondState=="+device.getBondState());
         return true;
+    }
+
+    /**
+     * Disconnects an existing connection or cancel a pending connection. The disconnection result
+     * is reported asynchronously through the
+     * {@code BluetoothGattCallback#onConnectionStateChange(android.bluetooth.BluetoothGatt, int, int)}
+     * callback.
+     */
+    public void disconnect() {
+        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
+            Log.w(LOG_TAG, "BluetoothAdapter not initialized");
+            return;
+        }
+        mBluetoothGatt.disconnect();
     }
 
     /**
@@ -130,25 +156,30 @@ public class BleService extends Service {
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            Log.i(LOG_TAG, "onConnectionStateChange");
             String intentAction;
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 mConnectionState = STATE_CONNECTED;
                 Log.i(LOG_TAG, "Connected to GATT server.");
+                broadcastUpdate(ACTION_GATT_CONNECTED);
                 // Attempts to discover services after successful connection.
                 Log.i(LOG_TAG, "Attempting to start service discovery:" +
                         mBluetoothGatt.discoverServices());
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 mConnectionState = STATE_DISCONNECTED;
+                broadcastUpdate(ACTION_GATT_DISCONNECTED);
                 Log.i(LOG_TAG, "Disconnected from GATT server.");
             }
         }
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            if (status != BluetoothGatt.GATT_SUCCESS) {
+            Log.i(LOG_TAG, "onServicesDiscovered");
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
+            } else {
                 Log.w(LOG_TAG, "onServicesDiscovered received: " + status);
-                //System.out.println("onServicesDiscovered received: " + status);
             }
         }
 
@@ -157,7 +188,7 @@ public class BleService extends Service {
                                          BluetoothGattCharacteristic characteristic,
                                          int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                System.out.println(LOG_TAG+":onCharRead "+gatt.getDevice().getName()
+                Log.i(LOG_TAG,":onCharRead "+gatt.getDevice().getName()
                         +" read "
                         +characteristic.getUuid().toString()
                         +" -> "
@@ -172,4 +203,20 @@ public class BleService extends Service {
         }
     };
 
+    private void broadcastUpdate(final String action) {
+        final Intent intent = new Intent(action);
+        sendBroadcast(intent);
+    }
+
+    /**
+     * Retrieves a list of supported GATT services on the connected device. This should be
+     * invoked only after {@code BluetoothGatt#discoverServices()} completes successfully.
+     *
+     * @return A {@code List} of supported services.
+     */
+    public List<BluetoothGattService> getSupportedGattServices() {
+        if (mBluetoothGatt == null) return null;
+
+        return mBluetoothGatt.getServices();
+    }
 }

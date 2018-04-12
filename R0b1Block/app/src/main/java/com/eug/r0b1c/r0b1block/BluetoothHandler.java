@@ -2,13 +2,17 @@ package com.eug.r0b1c.r0b1block;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
@@ -28,10 +32,17 @@ import java.util.UUID;
 public class BluetoothHandler {
     private static final String LOG_TAG = "BluetoothHandler";
 
+    private UUID r0b1cServiceUuid =
+            UUID.fromString("60ae973a-d019-4dd3-884f-96e834805f11");
+    private UUID DfuServiceUuid =
+            UUID.fromString("60ae973a-0000-4dd3-884f-96e834805f11"); // ToDo
+
     private Context context;
     private boolean mEnabled = false;
     private BluetoothAdapter mBluetoothAdapter;
     private String mCurrentConnectedBLEAddr;
+    private String mConnectingAddr = null;
+    private List<BluetoothGattService> gattServices = null;
     private BleService mBleService;
     private BleMenuState menuState;
     private BleScanner mBleScanner;
@@ -89,24 +100,24 @@ public class BluetoothHandler {
     }
 
     public void connect(BleDevice dev){
-        mCurrentConnectedBLEAddr = dev.getDeviceAddr();
-        Log.i(LOG_TAG, "Connecting to "+mCurrentConnectedBLEAddr);
+        mConnectingAddr = dev.getDeviceAddr();
+        Log.i(LOG_TAG, "Connecting to "+mConnectingAddr);
         Intent gattServiceIntent = new Intent(context, BleService.class);
 
         if(!context.bindService(gattServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE)){
             Log.e(LOG_TAG, "bindService failed!");
         }
 
-        //context.registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-        if (mBleService != null) {
-            final boolean result = mBleService.connect(mCurrentConnectedBLEAddr);
-            Log.i(LOG_TAG, "Connected to "+mCurrentConnectedBLEAddr+" "+result);
-            if (!result) {
-                mCurrentConnectedBLEAddr = null;
-            }
-        }else{
-            Log.e(LOG_TAG, "mBleService = null");
-        }
+        context.registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+    }
+
+    private static IntentFilter makeGattUpdateIntentFilter() {
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BleService.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BleService.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BleService.ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(BleService.ACTION_DATA_AVAILABLE);
+        return intentFilter;
     }
 
     // Code to manage Service lifecycle.
@@ -119,19 +130,75 @@ public class BluetoothHandler {
                 ((MainActivity) context).finish();
             }
             // Automatically connects to the device upon successful start-up initialization.
-            mBleService.connect(mCurrentConnectedBLEAddr);
+            mBleService.connect(mConnectingAddr);
         }
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             mBleService = null;
-            menuState.SetDisonnected();
         }
     };
+
+    // Handles various events fired by the Service.
+    // ACTION_GATT_CONNECTED: connected to a GATT server.
+    // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
+    // ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
+    // ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read
+    //                        or notification operations.
+    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            Log.i(LOG_TAG, "On receive "+action);
+            if (BleService.ACTION_GATT_CONNECTED.equals(action)) {
+                mCurrentConnectedBLEAddr = mConnectingAddr;
+                menuState.SetConnected();
+            } else if (BleService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                mCurrentConnectedBLEAddr = null;
+                menuState.SetDisonnected();
+            } else if (BleService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                // Show all the supported services and characteristics on the user interface.
+                if (mBleService != null)
+                    getCharacteristic(mBleService.getSupportedGattServices());
+            }
+        }
+    };
+
+    public void getCharacteristic(List<BluetoothGattService> gattServices){
+        this.gattServices = gattServices;
+        String uuid = null;
+        BluetoothGattCharacteristic characteristic = null;
+        BluetoothGattService targetGattService = null;
+        // get target gattservice
+        for (BluetoothGattService gattService : gattServices) {
+            uuid = gattService.getUuid().toString();
+            Log.i(LOG_TAG, "GATT service "+uuid);
+            if(uuid.equals(r0b1cServiceUuid.toString())){
+                targetGattService = gattService;
+            }
+        }
+
+        if(targetGattService != null){
+            List<BluetoothGattCharacteristic> gattCharacteristics =
+                    targetGattService.getCharacteristics();
+            // get targetGattCharacteristic
+            for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
+                uuid = gattCharacteristic.getUuid().toString();
+                Log.i(LOG_TAG, "GATT char "+uuid);
+            }
+        }else{
+            Toast.makeText(context, "not support this BLE module", Toast.LENGTH_SHORT).show();
+            return ;
+        }
+    }
 
     /* Change menu icon according to state */
     public void MenuTap(MenuItem icon) {
         if (menuState.MenuTap()) {
-            mBleScanner.scanLeDevice(true);
+            if (mCurrentConnectedBLEAddr == null) {
+                mBleScanner.scanLeDevice(true);
+            } else {
+                mBleService.disconnect();
+            }
         }
     }
     public void SetMenuItem(MenuItem icon) {
