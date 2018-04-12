@@ -36,6 +36,8 @@ public class BluetoothHandler {
             UUID.fromString("60ae973a-d019-4dd3-884f-96e834805f11");
     private UUID DfuServiceUuid =
             UUID.fromString("60ae973a-0000-4dd3-884f-96e834805f11"); // ToDo
+    private UUID ButtonCharUuid =
+            UUID.fromString("60ae973e-d019-4dd3-884f-96e834805f11");
 
     private Context context;
     private boolean mEnabled = false;
@@ -46,6 +48,7 @@ public class BluetoothHandler {
     private BleService mBleService;
     private BleMenuState menuState;
     private BleScanner mBleScanner;
+    private R0b1cService mRService = null;
 
     public BluetoothHandler(Context context) {
         this.context = context;
@@ -173,6 +176,7 @@ public class BluetoothHandler {
             uuid = gattService.getUuid().toString();
             Log.i(LOG_TAG, "GATT service "+uuid);
             if(uuid.equals(r0b1cServiceUuid.toString())){
+                mRService = new R0b1cService(gattService);
                 targetGattService = gattService;
             }
         }
