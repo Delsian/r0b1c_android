@@ -35,9 +35,9 @@ public class BluetoothHandler {
     private UUID r0b1cServiceUuid =
             UUID.fromString("60ae973a-d019-4dd3-884f-96e834805f11");
     private UUID DfuServiceUuid =
-            UUID.fromString("60ae973a-0000-4dd3-884f-96e834805f11"); // ToDo
-    private UUID ButtonCharUuid =
-            UUID.fromString("60ae973e-d019-4dd3-884f-96e834805f11");
+            UUID.fromString("0000fe59-0000-1000-8000-00805f9b34fb"); // ToDo
+    private UUID VersionServiceUuid =
+            UUID.fromString("0000180a-0000-1000-8000-00805f9b34fb");
 
     private Context context;
     private boolean mEnabled = false;
@@ -49,6 +49,7 @@ public class BluetoothHandler {
     private BleMenuState menuState;
     private BleScanner mBleScanner;
     private R0b1cService mRService = null;
+    private Upgrader mUpgrader = null;
 
     public BluetoothHandler(Context context) {
         this.context = context;
@@ -169,29 +170,16 @@ public class BluetoothHandler {
     public void getCharacteristic(List<BluetoothGattService> gattServices){
         this.gattServices = gattServices;
         String uuid = null;
-        BluetoothGattCharacteristic characteristic = null;
-        BluetoothGattService targetGattService = null;
         // get target gattservice
         for (BluetoothGattService gattService : gattServices) {
             uuid = gattService.getUuid().toString();
             Log.i(LOG_TAG, "GATT service "+uuid);
             if(uuid.equals(r0b1cServiceUuid.toString())){
                 mRService = new R0b1cService(gattService);
-                targetGattService = gattService;
+            } else if(uuid.equals(VersionServiceUuid.toString())) {
+                Upgrader up = Upgrader.getInstance();
+                up.CheckVersion(gattService);
             }
-        }
-
-        if(targetGattService != null){
-            List<BluetoothGattCharacteristic> gattCharacteristics =
-                    targetGattService.getCharacteristics();
-            // get targetGattCharacteristic
-            for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
-                uuid = gattCharacteristic.getUuid().toString();
-                Log.i(LOG_TAG, "GATT char "+uuid);
-            }
-        }else{
-            Toast.makeText(context, "not support this BLE module", Toast.LENGTH_SHORT).show();
-            return ;
         }
     }
 

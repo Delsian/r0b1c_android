@@ -23,7 +23,6 @@ public class MainActivity extends AbstractBlocklyActivity {
     private static final String TOOLBOX = "toolbox.xml";
 
     private BluetoothHandler bluetoothHandler;
-    private Upgrader mUpgrader;
 
     // Add custom blocks to this list.
     private static final List<String> BLOCK_DEFINITIONS = Arrays.asList(
@@ -46,7 +45,6 @@ public class MainActivity extends AbstractBlocklyActivity {
 
         mHandler = new Handler();
         bluetoothHandler = new BluetoothHandler(this);
-        mUpgrader = new Upgrader();
     }
 
     public BluetoothHandler getBluetoothHandler() {
