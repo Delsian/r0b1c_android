@@ -74,12 +74,6 @@ public class MainActivity extends AbstractBlocklyActivity {
                 @Override
                 public void onFinishCodeGeneration(final String generatedCode) {
                     bluetoothHandler.SendCode(generatedCode);
-                    //mHandler.post(new Runnable() {
-                        //@Override
-                        //public void run() {
-                            //mGeneratedTextView.setText(generatedCode);
-                        //}
-                    //});
                 }
             };
 

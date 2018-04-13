@@ -1,5 +1,6 @@
 package com.eug.r0b1c.r0b1block;
 
+import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.util.Log;
@@ -10,6 +11,7 @@ import java.util.UUID;
 public class R0b1cService {
     private static final String LOG_TAG = "R0b1cService";
     private BluetoothGattService mService;
+    private BleService mBleService;
     private UUID ProgCharUuid =
             UUID.fromString("60ae973b-d019-4dd3-884f-96e834805f11");
     private UUID PortCharUuid =
@@ -20,8 +22,9 @@ public class R0b1cService {
     private BluetoothGattCharacteristic mPortChar;
     private BluetoothGattCharacteristic mButtonChar;
 
-    public R0b1cService(BluetoothGattService serv) {
+    public R0b1cService(BluetoothGattService serv, BleService bs) {
         mService = serv;
+        mBleService = bs;
         String uuid = null;
         List<BluetoothGattCharacteristic> gattCharacteristics =
                 mService.getCharacteristics();
@@ -43,7 +46,7 @@ public class R0b1cService {
         if (mProgChar == null) {
             return false;
         } else {
-
+            mBleService.SendCode(code, mProgChar);
             return true;
         }
     }

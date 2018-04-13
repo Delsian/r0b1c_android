@@ -26,6 +26,10 @@ public class BleService extends Service {
     private BluetoothGatt mBluetoothGatt;
     private String mBluetoothDeviceAddress;
 
+    // Writing code to device
+    private Integer mCodePtr = 0;
+    private byte[] mCodeBuffer = null;
+
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
@@ -201,9 +205,21 @@ public class BleService extends Service {
         }
 
         @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt,
+        public synchronized void onCharacteristicWrite(BluetoothGatt gatt,
                                           BluetoothGattCharacteristic characteristic, int status) {
             Log.i(LOG_TAG, "onCharWrite");
+            if (mCodeBuffer != null && mCodePtr < mCodeBuffer.length) {
+                Log.i(LOG_TAG, "chunk addr "+mCodePtr);
+                Integer pktlen = (mCodeBuffer.length-mCodePtr>20)?20:(mCodeBuffer.length-mCodePtr);
+                byte[] pkt = new byte[pktlen];
+                System.arraycopy(mCodeBuffer,mCodePtr,pkt,0,pktlen);
+                characteristic.setValue(pkt);
+                mBluetoothGatt.writeCharacteristic(characteristic);
+                mCodePtr += pktlen;
+                if (mCodePtr >= mCodeBuffer.length) {
+                    mCodeBuffer = null; // done
+                }
+            }
             super.onCharacteristicWrite(gatt, characteristic, status);
         }
 
@@ -214,6 +230,17 @@ public class BleService extends Service {
             super.onCharacteristicChanged(gatt, characteristic);
         }
     };
+
+    public void SendCode(final String code, BluetoothGattCharacteristic mCodeChar) {
+        mCodeBuffer = code.getBytes();
+        mCodePtr = 0;
+        byte[] pkt = new byte[3];
+        pkt[0] = 1; // code indication
+        pkt[1] = (byte)(code.length()%256);
+        pkt[2] = (byte)(code.length()/256);
+        mCodeChar.setValue(pkt);
+        mBluetoothGatt.writeCharacteristic(mCodeChar);
+    }
 
     private void broadcastUpdate(final String action) {
         final Intent intent = new Intent(action);

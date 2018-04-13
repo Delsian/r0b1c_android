@@ -102,8 +102,8 @@ public class BluetoothHandler {
     }
 
     public boolean SendCode(final String code) {
-        if (mCurrentConnectedBLEAddr != null) {
-            return true;
+        if (mCurrentConnectedBLEAddr != null && mRService != null) {
+            return mRService.R0b1cSendProgram(code);
         }
         return false;
     }
@@ -161,6 +161,7 @@ public class BluetoothHandler {
                 menuState.SetConnected();
             } else if (BleService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mCurrentConnectedBLEAddr = null;
+                mRService = null;
                 menuState.SetDisconnected();
                 context.unbindService(mServiceConnection);
             } else if (BleService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
@@ -190,7 +191,7 @@ public class BluetoothHandler {
             uuid = gattService.getUuid().toString();
             Log.i(LOG_TAG, "GATT service "+uuid);
             if(uuid.equals(r0b1cServiceUuid.toString())){
-                mRService = new R0b1cService(gattService);
+                mRService = new R0b1cService(gattService, mBleService);
             } else if(uuid.equals(VersionServiceUuid.toString())) {
                 List<BluetoothGattCharacteristic> gattCharacteristics =
                         gattService.getCharacteristics();
