@@ -8,6 +8,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.List;
+import java.util.UUID;
 
 public class Upgrader {
     private static final String LOG_TAG = "Upgrader";
@@ -25,15 +26,8 @@ public class Upgrader {
         return instance;
     }
 
-    public boolean CheckVersion(BluetoothGattService serv) {
-        String uuid = null;
-        List<BluetoothGattCharacteristic> gattCharacteristics =
-                serv.getCharacteristics();
-        // get targetGattCharacteristic
-        for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
-            uuid = gattCharacteristic.getUuid().toString();
-            Log.i(LOG_TAG, "Upgr char " + uuid);
-        }
+    public boolean CheckVersion(String version) {
+
         return true;
     }
 }

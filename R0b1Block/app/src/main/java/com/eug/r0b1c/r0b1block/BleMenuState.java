@@ -21,7 +21,7 @@ public class BleMenuState {
         state = MenuStateE.CONNECTED;
     }
 
-    public void SetDisonnected() {
+    public void SetDisconnected() {
         icon.setIcon(R.drawable.ic_ble_white_24dp);
         state = MenuStateE.DISCONNECTED;
     }
@@ -39,10 +39,8 @@ public class BleMenuState {
                 state = MenuStateE.CONN_LOCK;
                 break;
             case CONN_LOCK:
-                Toast.makeText(context, "Disconnected", Toast.LENGTH_SHORT);
-                icon.setIcon(R.drawable.ic_ble_white_24dp);
-                state = MenuStateE.DISCONNECTED;
-                break;
+                Toast.makeText(context, "Disconnecting", Toast.LENGTH_SHORT);
+                return true;
         }
         return false;
     }

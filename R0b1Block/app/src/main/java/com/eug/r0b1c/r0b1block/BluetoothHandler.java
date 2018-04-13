@@ -32,12 +32,15 @@ import java.util.UUID;
 public class BluetoothHandler {
     private static final String LOG_TAG = "BluetoothHandler";
 
-    private UUID r0b1cServiceUuid =
+    private static final UUID r0b1cServiceUuid =
             UUID.fromString("60ae973a-d019-4dd3-884f-96e834805f11");
-    private UUID DfuServiceUuid =
+    private static final UUID DfuServiceUuid =
             UUID.fromString("0000fe59-0000-1000-8000-00805f9b34fb"); // ToDo
-    private UUID VersionServiceUuid =
+    private static final UUID VersionServiceUuid =
             UUID.fromString("0000180a-0000-1000-8000-00805f9b34fb");
+    private static final UUID VERSION_UUID =
+            UUID.fromString("00002a26-0000-1000-8000-00805f9b34fb");
+
 
     private Context context;
     private boolean mEnabled = false;
@@ -50,6 +53,7 @@ public class BluetoothHandler {
     private BleScanner mBleScanner;
     private R0b1cService mRService = null;
     private Upgrader mUpgrader = null;
+    private BluetoothGattCharacteristic verChar;
 
     public BluetoothHandler(Context context) {
         this.context = context;
@@ -71,6 +75,7 @@ public class BluetoothHandler {
         }
 
         mBleScanner = new BleScanner(this);
+        context.registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
     }
 
     public boolean isSupportBle(){
@@ -111,8 +116,6 @@ public class BluetoothHandler {
         if(!context.bindService(gattServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE)){
             Log.e(LOG_TAG, "bindService failed!");
         }
-
-        context.registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
     }
 
     private static IntentFilter makeGattUpdateIntentFilter() {
@@ -158,11 +161,23 @@ public class BluetoothHandler {
                 menuState.SetConnected();
             } else if (BleService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mCurrentConnectedBLEAddr = null;
-                menuState.SetDisonnected();
+                menuState.SetDisconnected();
+                context.unbindService(mServiceConnection);
             } else if (BleService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
                 if (mBleService != null)
                     getCharacteristic(mBleService.getSupportedGattServices());
+            } else if (BleService.ACTION_DATA_AVAILABLE.equals(action)) {
+                String dataChar = intent.getStringExtra(BleService.EXTRA_DATA);
+                // Check current version
+                if(dataChar.equals(VERSION_UUID.toString())){
+                    String ver = verChar.getStringValue(0);
+                    if (ver != null) {
+                        Log.i(LOG_TAG, "Version " + ver);
+                        Upgrader up = Upgrader.getInstance();
+                        up.CheckVersion(ver);
+                    }
+                }
             }
         }
     };
@@ -177,8 +192,16 @@ public class BluetoothHandler {
             if(uuid.equals(r0b1cServiceUuid.toString())){
                 mRService = new R0b1cService(gattService);
             } else if(uuid.equals(VersionServiceUuid.toString())) {
-                Upgrader up = Upgrader.getInstance();
-                up.CheckVersion(gattService);
+                List<BluetoothGattCharacteristic> gattCharacteristics =
+                        gattService.getCharacteristics();
+                // get targetGattCharacteristic
+                for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
+                    uuid = gattCharacteristic.getUuid().toString();
+                    if(uuid.equals(VERSION_UUID.toString())){
+                        verChar = gattCharacteristic;
+                        mBleService.readCharacteristic(verChar);
+                    }
+                }
             }
         }
     }
@@ -189,6 +212,7 @@ public class BluetoothHandler {
             if (mCurrentConnectedBLEAddr == null) {
                 mBleScanner.scanLeDevice(true);
             } else {
+                Log.i(LOG_TAG, "Disconnect from "+mCurrentConnectedBLEAddr);
                 mBleService.disconnect();
             }
         }

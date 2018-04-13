@@ -39,6 +39,8 @@ public class BleService extends Service {
             "r0b1c.ACTION_GATT_SERVICES_DISCOVERED";
     public final static String ACTION_DATA_AVAILABLE =
             "r0b1c.ACTION_DATA_AVAILABLE";
+    public final static String EXTRA_DATA =
+            "r0b1c.EXTRA_DATA";
 
     /**
      * Initializes a reference to the local Bluetooth adapter.
@@ -187,25 +189,48 @@ public class BleService extends Service {
         public void onCharacteristicRead(BluetoothGatt gatt,
                                          BluetoothGattCharacteristic characteristic,
                                          int status) {
+            Log.i(LOG_TAG, "onCharRead");
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.i(LOG_TAG,":onCharRead "+gatt.getDevice().getName()
                         +" read "
                         +characteristic.getUuid().toString()
                         +" -> "
                         +new String(characteristic.getValue()));
+                broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
             }
         }
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt,
                                           BluetoothGattCharacteristic characteristic, int status) {
+            Log.i(LOG_TAG, "onCharWrite");
             super.onCharacteristicWrite(gatt, characteristic, status);
+        }
+
+        @Override
+        public synchronized void onCharacteristicChanged(BluetoothGatt gatt,
+                                            BluetoothGattCharacteristic characteristic) {
+            Log.i(LOG_TAG, "onCharChg");
+            super.onCharacteristicChanged(gatt, characteristic);
         }
     };
 
     private void broadcastUpdate(final String action) {
         final Intent intent = new Intent(action);
         sendBroadcast(intent);
+    }
+
+    private void broadcastUpdate(final String action,
+                                 final BluetoothGattCharacteristic characteristic) {
+        final Intent intent = new Intent(action);
+        intent.putExtra(EXTRA_DATA, characteristic.getUuid().toString());
+        sendBroadcast(intent);
+    }
+
+    public void readCharacteristic(BluetoothGattCharacteristic characteristic) {
+        if (mBluetoothGatt != null) {
+            mBluetoothGatt.readCharacteristic(characteristic);
+        }
     }
 
     /**

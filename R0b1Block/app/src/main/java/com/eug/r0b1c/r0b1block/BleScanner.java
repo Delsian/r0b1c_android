@@ -119,7 +119,7 @@ public class BleScanner {
         if (mDevList.size() > 0) {
             bHandler.connect(getDevMaxRssi());
         } else {
-            mState.SetDisonnected();
+            mState.SetDisconnected();
         }
     }
 
