@@ -113,7 +113,9 @@ public class MainActivity extends AbstractBlocklyActivity {
         getController().addVariable("item");
     }
 
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        super.onOptionsItemSelected(item);
         int id = item.getItemId();
         if (id == R.id.action_ble) {
             bluetoothHandler.MenuTap(item);
