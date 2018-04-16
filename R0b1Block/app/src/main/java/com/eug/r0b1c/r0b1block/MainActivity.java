@@ -1,5 +1,7 @@
 package com.eug.r0b1c.r0b1block;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -45,6 +47,10 @@ public class MainActivity extends AbstractBlocklyActivity {
 
         mHandler = new Handler();
         bluetoothHandler = new BluetoothHandler(this);
+
+        // Set upgrader context
+        Upgrader up = Upgrader.getInstance();
+        up.SetContext(this);
     }
 
     public BluetoothHandler getBluetoothHandler() {
@@ -80,7 +86,6 @@ public class MainActivity extends AbstractBlocklyActivity {
     @Override
     protected View onCreateContentView(int parentId) {
         View root = getLayoutInflater().inflate(R.layout.activity_main, null);
-
         return root;
     }
 
@@ -115,5 +120,24 @@ public class MainActivity extends AbstractBlocklyActivity {
             bluetoothHandler.MenuTap(item);
         }
         return true;
+    }
+
+    public void IsUpgradeRequired(String verOld, String verNew) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("New r0b1c version available: "+ verNew + "\nCurrent version "+verOld)
+                .setTitle(R.string.upg_req);
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked OK button
+                Upgrader up = Upgrader.getInstance();
+                up.DoUpgrade();
+            }
+        });
+        builder.setNegativeButton(R.string.later, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User cancelled the dialog
+            }
+        });
+        builder.show();
     }
 }

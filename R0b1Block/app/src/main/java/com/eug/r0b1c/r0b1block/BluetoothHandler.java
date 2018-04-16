@@ -176,7 +176,7 @@ public class BluetoothHandler {
                     if (ver != null) {
                         Log.i(LOG_TAG, "Version " + ver);
                         Upgrader up = Upgrader.getInstance();
-                        up.CheckVersion(ver);
+                        up.SetFwVersion(ver);
                     }
                 }
             }
