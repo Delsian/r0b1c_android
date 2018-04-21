@@ -1,22 +1,28 @@
-package com.eug.r0b1c.r0b1block;
+package com.eug.r0b1c.r0b1block.upgrade;
 
 
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.eug.r0b1c.r0b1block.MainActivity;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
+
 public class Upgrader {
     private static final String LOG_TAG = "Upgrader";
+    private static final int MAX_DFU_ZIP_SIZE = 512*1024;
     private static Upgrader instance;
     private StorageReference mStorageRef;
     private Context mContext;
     private String mVersion = null;
     private String mFwVersion = null;
+    private File localDfuZip;
 
     private Upgrader() {
     }
@@ -69,7 +75,22 @@ public class Upgrader {
     }
 
     public void DoUpgrade() {
-    
+        try {
+            StorageReference gsFw = mStorageRef.child("dfu.zip");
+            localDfuZip = new File("downloads/dfu1.zip" );
+            gsFw.getFile(localDfuZip).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    Log.d(LOG_TAG, "Got file");
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                }
+            });
+        } catch (Exception e) {
+
+        }
     }
 
     public void SetFwVersion(String version) {

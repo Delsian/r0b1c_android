@@ -2,7 +2,6 @@ package com.eug.r0b1c.r0b1block;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -11,11 +10,10 @@ import android.view.MenuItem;
 import android.view.View;
 
 
+import com.eug.r0b1c.r0b1block.upgrade.Upgrader;
 import com.google.blockly.android.AbstractBlocklyActivity;
 import com.google.blockly.android.codegen.CodeGenerationRequest;
 import com.google.blockly.model.DefaultBlocks;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 import java.util.Arrays;
 import java.util.List;
