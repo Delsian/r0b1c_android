@@ -77,19 +77,23 @@ public class Upgrader {
     public void DoUpgrade() {
         try {
             StorageReference gsFw = mStorageRef.child("dfu.zip");
-            localDfuZip = new File("downloads/dfu1.zip" );
+            localDfuZip = new File( mContext.getCacheDir(),"dfu"+mVersion+".zip" );
             gsFw.getFile(localDfuZip).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                    Log.d(LOG_TAG, "Got file");
+                    Log.d(LOG_TAG, "Got file "+localDfuZip.getAbsolutePath());
+
+                    // Process DFU
+
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
+
                 }
             });
         } catch (Exception e) {
-
+            Log.d(LOG_TAG, "Err " + e.getLocalizedMessage());
         }
     }
 

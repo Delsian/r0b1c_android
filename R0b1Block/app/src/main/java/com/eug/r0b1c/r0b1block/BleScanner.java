@@ -17,7 +17,9 @@ import java.util.List;
 public class BleScanner {
     private static final String LOG_TAG = "BleScanner";
     private static final long SCAN_PERIOD = 3000;
-    private static final String targetServiceUuid = "60ae973a-d019-4dd3-884f-96e834805f11";
+    //private static final String targetServiceUuid = "60ae973a-d019-4dd3-884f-96e834805f11";
+    private static final String targetServiceUuid = "8ec9973a-f315-4f60-9fb8-838830daea50";
+    //private static final String targetServiceUuid = "0000973a-0000-4f60-9fb8-838830daea50";
     private static final String targetServiceUuidMask = "0000FFFF-0000-0000-0000-000000000000";
     private BluetoothHandler bHandler;
     private ArrayList<BleDevice> mDevList;
@@ -92,6 +94,7 @@ public class BleScanner {
                 }, SCAN_PERIOD);
                 ScanSettings settings = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build();
                 bluetoothLeScanner.startScan(scanFilters(), settings, mLeScanCallback);
+                //bluetoothLeScanner.startScan(mLeScanCallback);
                 mScanning = true;
             }
         } else {

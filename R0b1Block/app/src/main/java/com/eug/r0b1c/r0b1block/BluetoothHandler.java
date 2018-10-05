@@ -57,6 +57,7 @@ public class BluetoothHandler {
             ((MainActivity) context).finish();
             return;
         }
+
         // open bluetooth
         if (!getBluetoothAdapter().isEnabled()) {
             Intent mIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);

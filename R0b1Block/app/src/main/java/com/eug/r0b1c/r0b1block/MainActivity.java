@@ -5,10 +5,11 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-
+import android.Manifest;
 
 import com.eug.r0b1c.r0b1block.upgrade.Upgrader;
 import com.google.blockly.android.AbstractBlocklyActivity;
@@ -44,6 +45,13 @@ public class MainActivity extends AbstractBlocklyActivity {
         super.onCreate(savedInstanceState);
 
         mHandler = new Handler();
+
+        // request permissions, BLE requires location
+        int permissionCheck = ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION);
+        if (permissionCheck != 0) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1001);
+        }
         bluetoothHandler = new BluetoothHandler(this);
 
         // Set upgrader context
